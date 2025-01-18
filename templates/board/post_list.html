@@ -1,15 +1,34 @@
 {% extends 'base.html' %}
 {% block content %}
     <h1>Посты</h1>
-    <p>{{ posts }}</p>
-{#    {% for post in posts %}#}
-{#        <div class="post">#}
-{#            <h2><a href="{% url 'board:post_detail' post.pk %}">{{ post.title }}</a></h2>#}
-{#            <p>Автор: {{ post.user.username }}</p>#}
-{#            <p>Категория: {{ post.category }}</p>#}
-{#            <p>Дата создания: {{ post.created_at }}</p>#}
-{#            <p>Дата обновления: {{ post.updated_at }}</p>#}
-{#            <p>{{ post.content_text|safe }}</p>#}
-{#        </div>#}
-{#    {% endfor %}#}
-{% endblock %}
+        <h3>{{ time_now|date:'M d Y' }}</h3>
+    <hr>
+    {% if posts %}
+    <table>
+    <tr>
+        <td>Заголовок</td>
+        <td>Текст</td>
+        <td>Автор</td>
+        <td>Категория</td>
+        <td>Дата создания</td>
+        <td>Дата обновления</td>
+    </tr>
+    {% for post in posts %}
+        <tr>
+            <td>{{ post.title }}</td>
+            <td>{{ post.content_text|safe|truncatechars:15 }}</td>
+            <td>{{ post.user.username }}</td>
+            <td>{{ post.category }}</td>
+            <td>{{ post.created_at }}</td>
+            <td>{{ post.updated_at }}</td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="5">Посты не найдены</td>
+        </tr>
+    {% endfor %}
+    </table>
+    {% else %}
+        <p>Посты не найдены</p>
+    {% endif %}
+{% endblock content %}
