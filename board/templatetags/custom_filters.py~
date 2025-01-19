@@ -1,0 +1,7 @@
+from django import template
+#фильтровать отклики по объявлениям, фильтровать по категориям
+
+register = template.Library()
+@register.filter()
+def filter_by_category(value, arg):
+    return value.filter(category=arg)

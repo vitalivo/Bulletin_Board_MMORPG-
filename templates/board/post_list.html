@@ -1,7 +1,20 @@
 {% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+{% load custom_tags %}
 {% block content %}
     <h1>Посты</h1>
-        <h3>{{ time_now|date:'M d Y' }}</h3>
+        <h3>{% current_time '%b %d %Y' %}</h3>
+        <form action="" method="get">
+        {{ filterset.form.non_field_errors }}
+        <label for="{{ filterset.form.title_icontains.id_for_label }}">Поиск:</label>
+        <input
+            id="{{ filterset.form.title_icontains.id }}"
+            name="{{ filterset.form.title_icontains.name }}"
+            value="{{ filterset.form.title_icontains.value }}"
+            class="form-control">
+
+        </form>
     <hr>
     {% if posts %}
     <table>
@@ -31,4 +44,24 @@
     {% else %}
         <p>Посты не найдены</p>
     {% endif %}
+    {% if page_obj.has_previous %}
+       <a href="?page=1">1</a>
+       {% if page_obj.previous_page_number != 1 %}
+           ...
+           <a href="?page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a>
+       {% endif %}
+   {% endif %}
+
+   {# Информация о текущей странице #}
+   {{ page_obj.number }}
+
+   {# Информация о следующих страницах #}
+   {% if page_obj.has_next %}
+       <a href="?page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a>
+       {% if paginator.num_pages != page_obj.next_page_number %}
+           ...
+           <a href="?page={{ page_obj.paginator.num_pages }}">{{ page_obj.paginator.num_pages }}</a>
+       {% endif %}
+   {% endif %}
+
 {% endblock content %}
