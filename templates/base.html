@@ -5,20 +5,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Доска Объявлений{% endblock %}</title>
-    {% load static %}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 <body>
     <header>
-        <h1>Доска Обьявлений</h1>
+        <h1>Доска Объявлений</h1>
         <nav>
+            <ul>
+                <li><a href="{% url 'board:post-list' %}">Главная</a></li>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'account_logout' %}">Выйти</a></li>
+                {% else %}
+                    <li><a href="{% url 'account_login' %}">Войти</a></li>
+                    <li><a href="{% url 'account_signup' %}">Регистрация</a></li>
+                {% endif %}
+            </ul>
         </nav>
     </header>
     <main>
         {% block content %}{% endblock %}
     </main>
     <footer>
-        <p>&copy; 2025 Доска Обьявлений MMORPG</p>
+        <p>&copy; 2025 Доска Объявлений MMORPG</p>
     </footer>
 </body>
 </html>
