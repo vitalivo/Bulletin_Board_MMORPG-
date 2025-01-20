@@ -1,5 +1,4 @@
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.urls import reverse_lazy
 from datetime import datetime
 from .filters import PostFilter
 from django.views.generic import (
@@ -47,8 +46,7 @@ class PostUpdateView(PermissionRequiredMixin, UpdateView):
     template_name = 'board/post_edit.html'
 
 
-class PostDeleteView(PermissionRequiredMixin, DeleteView):
-    permission_required = ('board.delete_post',)
+class PostDeleteView(DeleteView):
     model = Post
     template_name = 'board/post_delete.html'
     success_url = reverse_lazy('board:post-list')
