@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from ckeditor.fields import RichTextField
+from django.urls import reverse
+# Create your models here.
 
 CATEGORY_CHOICES = [
     ('tanks', 'Танки'),
@@ -22,6 +24,10 @@ class Post(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')  # Автор объявления
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')  # Дата и время создания объявления
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлено')  # Дата и время последнего обновления объявления
+
+
+    def get_absolute_url(self):
+        return reverse('board:post-detail', args=[str(self.id)])
 
     def __str__(self):
         return self.title

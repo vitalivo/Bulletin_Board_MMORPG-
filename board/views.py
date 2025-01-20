@@ -1,7 +1,11 @@
+from django.urls import reverse_lazy
 from datetime import datetime
 from .filters import PostFilter
-from django.views.generic import ListView, DetailView
+from django.views.generic import (
+    ListView, DetailView, CreateView, UpdateView, DeleteView
+)
 from .models import Post
+from .forms import PostForm
 
 
 class PostListView(ListView):
@@ -26,3 +30,21 @@ class PostDetailView(DetailView):
     model = Post
     template_name = 'board/post_detail.html'
     context_object_name = 'post'
+
+
+class PostCreateView(CreateView):
+    form_class = PostForm
+    model = Post
+    template_name = 'board/post_edit.html'
+
+
+class PostUpdateView(UpdateView):
+    form_class = PostForm
+    model = Post
+    template_name = 'board/post_edit.html'
+
+
+class PostDeleteView(DeleteView):
+    model = Post
+    template_name = 'board/post_delete.html'
+    success_url = reverse_lazy('board:post-list')
