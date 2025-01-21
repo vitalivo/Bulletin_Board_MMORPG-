@@ -165,6 +165,8 @@ ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT = 300
 ACCOUNT_FORMS = {"signup": "accounts.forms.CustomSignupForm"}
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+
 EMAIL_HOST = 'smtp.yandex.ru'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = "vitalivoloshin1975@yandex.co.il"
@@ -172,6 +174,6 @@ EMAIL_HOST_PASSWORD = "d542166ef01f47dfa89d2deab4627844"
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 
-DEFAULT_FROM_EMAIL = "vitalivoloshin1975@yandex.co.il"
+DEFAULT_FROM_EMAIL = "vitalivo@gmail.com"
 
 

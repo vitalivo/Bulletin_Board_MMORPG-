@@ -2,7 +2,7 @@ from allauth.account.forms import SignupForm
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from allauth.account.utils import setup_user_email
+from allauth.account.models import EmailAddress
 
 
 class SignUpForm(UserCreationForm):
@@ -22,6 +22,8 @@ class SignUpForm(UserCreationForm):
         )
 
 
+
+
 class CustomSignupForm(SignupForm):
     first_name = forms.CharField(max_length=30, label='First Name')
     last_name = forms.CharField(max_length=30, label='Last Name')
@@ -32,5 +34,10 @@ class CustomSignupForm(SignupForm):
         user.last_name = self.cleaned_data['last_name']
         user.save()
 
-        setup_user_email(request, user, [])
+        # Проверка и настройка адреса электронной почты пользователя
+        email_address, created = EmailAddress.objects.get_or_create(user=user, email=user.email)
+        if created:
+            email_address.send_confirmation(request)
+
         return user
+
