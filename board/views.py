@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
+from django.template.defaulttags import comment
 from django.urls import reverse_lazy
 from datetime import datetime
 from .filters import PostFilter
@@ -21,27 +22,24 @@ class UserCommentListView(LoginRequiredMixin, ListView):
 
 class CommentAcceptView(LoginRequiredMixin, UpdateView):
     model = Comment
-    form_class = CommentForm
+    fields = []
     template_name = 'board/comment_accept.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['post_id'] = self.object.post.id
-        return context
 
     def form_valid(self, form):
-        form.instance.accepted = True
-        response = form.save()
+        comment = self.get_object()
+        comment.accepted = True
+        comment.save()
         send_mail(
             subject='Ваш отклик был принят',
-            message=f'Ваш отклик на объявление "{response.post.title}" был принят.',
+            message=f'Ваш отклик на объявление "{comment.post.title}" был принят.',
             from_email='vitalivoloshin1975@yandex.co.il',
-            recipient_list=[response.user.email],
+            recipient_list=[comment.post.user.email],
         )
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy('board:user-responses')
+        return reverse_lazy('board:comment-list')
 
 
 class CommentDeleteView(LoginRequiredMixin, DeleteView):

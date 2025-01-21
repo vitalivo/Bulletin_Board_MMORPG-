@@ -35,7 +35,7 @@ class CustomSignupForm(SignupForm):
         user.save()
 
         # Проверка и настройка адреса электронной почты пользователя
-        email_address, created = EmailAddress.objects.get_or_create(user=user, email=user.email)
+        (email_address, created) = EmailAddress.objects.get_or_create(user=user, email=user.email)
         if created:
             email_address.send_confirmation(request)
 

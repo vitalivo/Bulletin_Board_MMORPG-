@@ -5,9 +5,8 @@
   <h2>Принять отклик</h2>
   <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <input type="hidden" name="post_id" value="{{ post_id }}">
     <button type="submit">Принять</button>
   </form>
 {% endblock %}
+
 
