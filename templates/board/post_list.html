@@ -4,8 +4,8 @@
 {% load custom_tags %}
 {% block content %}
     <h1>Посты</h1>
-        <h3>{% current_time '%b %d %Y' %}</h3>
-        <form action="" method="get">
+    <h3>{% current_time '%b %d %Y' %}</h3>
+    <form action="" method="get">
         {{ filterset.form.non_field_errors }}
         <label for="{{ filterset.form.title_icontains.id_for_label }}">Поиск:</label>
         <input
@@ -14,70 +14,81 @@
             value="{{ filterset.form.title_icontains.value }}"
             class="form-control">
         <button type="submit">Найти</button>
-
-        </form>
+    </form>
     <hr>
     {% if perms.board.add_post %}
-    <a href="{% url 'board:post-create' %}">Добавить пост</a>
+        <a href="{% url 'board:post-create' %}">Добавить пост</a>
+    {% endif %}
+    {% if user.is_authenticated %}
+        <a href="{% url 'board:comment-list' %}" class="btn btn-primary">Мои отклики</a>
     {% endif %}
     {% if posts %}
-    <table>
-    <tr>
-        <td>Заголовок</td>
-        <td>Текст</td>
-        <td>Автор</td>
-        <td>Категория</td>
-        <td>Дата создания</td>
-        <td>Дата обновления</td>
-        {% if perms.board.change_post or perms.board.delete_post %}
-            <td>Действия</td>
-        {% endif %}
-
-    </tr>
-    {% for post in posts %}
-        <tr>
-            <td>{{ post.title }}</td>
-            <td>{{ post.content_text|safe|truncatechars:15 }}</td>
-            <td>{{ post.user.username }}</td>
-            <td>{{ post.category }}</td>
-            <td>{{ post.created_at }}</td>
-            <td>{{ post.updated_at }}</td>
-            <td>
-                {% if perms.board.change_post %}
-                    <a href="{% url 'board:post-update' pk=post.id %}">Редактировать</a>
+        <table>
+            <tr>
+                <td>Заголовок</td>
+                <td>Текст</td>
+                <td>Автор</td>
+                <td>Категория</td>
+                <td>Дата создания</td>
+                <td>Дата обновления</td>
+                {% if perms.board.change_post or perms.board.delete_post %}
+                    <td>Действия</td>
                 {% endif %}
-                {% if perms.board.delete_post %}
-                    <a href="{% url 'board:post-delete' post.id %}">Удалить</a>
-                {% endif %}"
-            </td>
-
-        </tr>
-    {% empty %}
-        <tr>
-            <td colspan="5">Посты не найдены</td>
-        </tr>
-    {% endfor %}
-    </table>
+            </tr>
+            {% for post in posts %}
+                <tr>
+                    <td>{{ post.title }}</td>
+                    <td>{{ post.content_text|safe|truncatechars:15 }}</td>
+                    <td>{{ post.user.username }}</td>
+                    <td>{{ post.get_category_display }}</td>
+                    <td>{{ post.created_at }}</td>
+                    <td>{{ post.updated_at }}</td>
+                    <td>
+                        {% if perms.board.change_post %}
+                            <a href="{% url 'board:post-update' pk=post.id %}">Редактировать</a>
+                        {% endif %}
+                        {% if perms.board.delete_post %}
+                            <a href="{% url 'board:post-delete' post.id %}">Удалить</a>
+                        {% endif %}
+                        <a href="{% url 'board:comment-create' post.pk %}">Откликнуться</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="7">
+                        <h4>Отклики:</h4>
+                        {% for response in post.comment_set.all %}
+                            <p><strong>{{ response.user.username }}:</strong> {{ response.content }}</p>
+                        {% empty %}
+                            <p>Откликов пока нет</p>
+                        {% endfor %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5">Посты не найдены</td>
+                </tr>
+            {% endfor %}
+        </table>
     {% else %}
         <p>Посты не найдены</p>
     {% endif %}
-   {% if page_obj.has_previous %}
 
-       <a href="?{% url_replace page=1 %}">1</a>
-       {% if page_obj.previous_page_number != 1 %}
-           ...
-           <a href="?{% url_replace page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
-       {% endif %}
-   {% endif %}
+    {% if page_obj.has_previous %}
+        <a href="?{% url_replace page=1 %}">1</a>
+        {% if page_obj.previous_page_number != 1 %}
+            ...
+            <a href="?{% url_replace page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
+        {% endif %}
+    {% endif %}
 
-   {{ page_obj.number }}
+    {{ page_obj.number }}
 
-   {% if page_obj.has_next %}
-       <a href="?{% url_replace page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
-       {% if paginator.num_pages != page_obj.next_page_number %}
-           ...
-           <a href="?{% url_replace page=page_obj.paginator.num_pages %}">{{ page_obj.paginator.num_pages }}</a>
-       {% endif %}
-   {% endif %}
+    {% if page_obj.has_next %}
+        <a href="?{% url_replace page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
+        {% if paginator.num_pages != page_obj.next_page_number %}
+            ...
+            <a href="?{% url_replace page=page_obj.paginator.num_pages %}">{{ page_obj.paginator.num_pages }}</a>
+        {% endif %}
+    {% endif %}
+{% endblock %}
 
-{% endblock content %}

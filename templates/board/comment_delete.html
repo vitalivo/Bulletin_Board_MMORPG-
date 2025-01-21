@@ -1,0 +1,11 @@
+<!-- templates/board/comment_delete.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Удалить отклик</h2>
+  <form method="post">
+    {% csrf_token %}
+    <p>Вы уверены, что хотите удалить этот отклик?</p>
+    <button type="submit">Удалить</button>
+  </form>
+{% endblock %}

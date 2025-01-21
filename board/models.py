@@ -40,4 +40,4 @@ class Comment(models.Model):
     accepted = models.BooleanField(default=False, verbose_name='Принят')  # Флаг принятого комментария
 
     def __str__(self):
-        return f'От {self.user.username} на "{self.ad.title}"'
+        return f'От {self.user.username} на "{self.post.title}"'

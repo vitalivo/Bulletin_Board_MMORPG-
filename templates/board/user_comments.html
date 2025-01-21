@@ -1,0 +1,17 @@
+<!-- templates/board/user_responses.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Мои отклики</h2>
+  <ul>
+    {% for comment in comments %}
+      <li>
+        <strong>{{ comment.post.title }}:</strong> {{ comment.content }}
+        {% if not comment.accepted %}
+          <a href="{% url 'board:comment-accept' comment.pk %}">Принять</a>
+        {% endif %}
+        <a href="{% url 'board:comment-delete' comment.pk %}">Удалить</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}

@@ -1,0 +1,11 @@
+<!-- templates/board/response_form.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Откликнуться на объявление</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Отправить отклик</button>
+  </form>
+{% endblock %}
