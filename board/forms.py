@@ -16,7 +16,7 @@ class PostForm(forms.ModelForm):
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
-        fields = ['content']
+        fields = ['content',]
 
     def __init__(self, *args, **kwargs):
         self.post_id = kwargs.pop('post_id', None)

@@ -1,17 +1,49 @@
-from django.contrib.auth.mixins import PermissionRequiredMixin, LoginRequiredMixin
-from django.template.defaulttags import comment
+import logging
+from smtplib import SMTPException
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.urls import reverse_lazy
 from datetime import datetime
 from .filters import PostFilter
 from django.views.generic import (
     ListView, DetailView, CreateView, UpdateView, DeleteView
 )
-from .models import Post, Comment
 from .forms import PostForm, CommentForm
 from django.core.mail import send_mail
+logger = logging.getLogger('django')
+from .models import Subscription, Category, Post, Comment
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_protect
+from django.db.models import Exists, OuterRef, BooleanField, ExpressionWrapper, Q
+
+@login_required
+@csrf_protect
+def subscriptions(request):
+    if request.method == 'POST':
+        category_id = request.POST.get('category_id')
+        category = get_object_or_404(Category, id=category_id)
+        action = request.POST.get('action')
+
+        if action == 'subscribe':
+            Subscription.objects.get_or_create(user=request.user, category=category)
+        elif action == 'unsubscribe':
+            Subscription.objects.filter(user=request.user, category=category).delete()
+
+    categories_with_subscriptions = Category.objects.annotate(
+        user_subscribed=ExpressionWrapper(
+            Exists(Subscription.objects.filter(user=request.user, category=OuterRef('pk'))),
+            output_field=BooleanField()
+        )
+    ).order_by('name')
+
+    return render(request, 'subscriptions.html', {'categories': categories_with_subscriptions})
 
 
-class UserCommentListView(LoginRequiredMixin, ListView):
+
+
+
+class UserCommentListView(PermissionRequiredMixin, ListView):
+    permission_required = ('board.view_comment',)
     model = Comment
     template_name = 'board/user_comments.html'
     context_object_name = 'comments'
@@ -20,29 +52,41 @@ class UserCommentListView(LoginRequiredMixin, ListView):
         return Comment.objects.filter(post__user=self.request.user)
 
 
-class CommentAcceptView(LoginRequiredMixin, UpdateView):
+class CommentAcceptView(PermissionRequiredMixin, UpdateView):
+    permission_required = ('board.change_comment',)
     model = Comment
     fields = []
     template_name = 'board/comment_accept.html'
 
-
     def form_valid(self, form):
         comment = self.get_object()
-        comment.accepted = True
-        comment.save()
-        send_mail(
-            subject='Ваш отклик был принят',
-            message=f'Ваш отклик на объявление "{comment.post.title}" был принят.',
-            from_email='vitalivoloshin1975@yandex.co.il',
-            recipient_list=[comment.post.user.email],
-        )
+        if not comment.accepted:  # Проверка состояния отклика
+            comment.accepted = True
+            comment.save()
+            try:
+                send_mail(
+                    subject='Ваш отклик был принят',
+                    message=f'Ваш отклик на объявление "{comment.post.title}" был принят.',
+                    from_email='vitalivoloshin1975@yandex.co.il',
+                    recipient_list=[comment.user.email],
+                )
+                logger.info("Email sent successfully")
+            except SMTPException as e:
+                logger.error(f"SMTPException: {e}")
+            except Exception as e:
+                logger.error(f"Exception: {e}")
+        else:
+            logger.info("Comment already accepted")
         return super().form_valid(form)
 
     def get_success_url(self):
+        logger.info("Redirecting to comment list")
         return reverse_lazy('board:comment-list')
 
 
-class CommentDeleteView(LoginRequiredMixin, DeleteView):
+
+class CommentDeleteView(PermissionRequiredMixin, DeleteView):
+    permission_required = ('board.delete_comment',)
     model = Comment
     template_name = 'board/comment_delete.html'
     success_url = reverse_lazy('board:user_comments')
@@ -56,7 +100,7 @@ class CommentCreateView(PermissionRequiredMixin, CreateView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs['post_id'] = self.kwargs.get('pk')  # Передаем post_id в форму
+        kwargs['post_id'] = self.kwargs.get('pk')
         return kwargs
 
     def form_valid(self, form):
@@ -72,7 +116,7 @@ class CommentCreateView(PermissionRequiredMixin, CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy('board:post-detail', kwargs={'pk': self.object.post.pk})
+        return reverse_lazy('post-detail', kwargs={'pk': self.object.pk})
 
 
 
@@ -110,13 +154,13 @@ class PostCreateView(PermissionRequiredMixin, CreateView):
         response = form.save()
         send_mail(
             subject='Новый отклик на ваше объявление',
-            message=f'Вы получили новый отклик: {response.content}',
-            from_email='vitalivoloshin1975@yandex.co.il', recipient_list=[response.post.user.email],
+            message=f'Вы получили новый отклик: {response.content_text}',
+            from_email='vitalivoloshin1975@yandex.co.il', recipient_list=[response.user.email],
         )
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy('post-detail', kwargs={'pk': self.object.post.pk})
+        return reverse_lazy('board:post-detail', kwargs={'pk': self.object.pk})
 
 
 class PostUpdateView(PermissionRequiredMixin, UpdateView):

@@ -1,12 +1,11 @@
-<!-- templates/board/comment_accept.html -->
 {% extends 'base.html' %}
-
 {% block content %}
-  <h2>Принять отклик</h2>
-  <form method="post">
-    {% csrf_token %}
-    <button type="submit">Принять</button>
-  </form>
+    <h1>Принятие отклика</h1>
+    <form method="post">
+        {% csrf_token %}
+        <p>Вы действительно хотите принять этот отклик?</p>
+        <button type="submit" class="btn btn-primary">Принять</button>
+    </form>
 {% endblock %}
 
 

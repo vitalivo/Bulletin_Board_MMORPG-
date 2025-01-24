@@ -1,17 +1,29 @@
-<!-- templates/board/user_responses.html -->
 {% extends 'base.html' %}
-
 {% block content %}
-  <h2>Мои отклики</h2>
-  <ul>
-    {% for comment in comments %}
-      <li>
-        <strong>{{ comment.post.title }}:</strong> {{ comment.content }}
-        {% if not comment.accepted %}
-          <a href="{% url 'board:comment-accept' comment.pk %}">Принять</a>
-        {% endif %}
-        <a href="{% url 'board:comment-delete' comment.pk %}">Удалить</a>
-      </li>
-    {% endfor %}
-  </ul>
+    <h1>Мои отклики</h1>
+    {% if comments %}
+        <table>
+            <tr>
+                <th>Обьявление</th>
+                <th>Отклик</th>
+                <th>Дата</th>
+                <th>Статус</th>
+                <th>Действия</th>
+            </tr>
+            {% for comment in comments %}
+                <tr>
+                    <td>{{ comment.post.title }}</td>
+                    <td>{{ comment.content }}</td>
+                    <td>{{ comment.created_at }}</td>
+                    <td>{{ comment.get_status_display }}</td>
+                    <td>
+                        <a href="{% url 'board:comment-accept' pk=comment.id %}">Принять</a>
+                        <a href="{% url 'board:comment-delete' pk=comment.id %}">Удалить</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>Нет откликов</p>
+    {% endif %}
 {% endblock %}

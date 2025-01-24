@@ -3,7 +3,7 @@
 {% load custom_filters %}
 {% load custom_tags %}
 {% block content %}
-    <h1>Посты</h1>
+    <h1>Обьявления</h1>
     <h3>{% current_time '%b %d %Y' %}</h3>
     <form action="" method="get">
         {{ filterset.form.non_field_errors }}
@@ -17,11 +17,12 @@
     </form>
     <hr>
     {% if perms.board.add_post %}
-        <a href="{% url 'board:post-create' %}">Добавить пост</a>
+        <a href="{% url 'board:post-create' %}">Добавить обьявление</a>
     {% endif %}
-    {% if user.is_authenticated %}
+    {% if perms.board.view_comment %}
         <a href="{% url 'board:comment-list' %}" class="btn btn-primary">Мои отклики</a>
     {% endif %}
+
     {% if posts %}
         <table>
             <tr>
@@ -53,24 +54,15 @@
                         <a href="{% url 'board:comment-create' post.pk %}">Откликнуться</a>
                     </td>
                 </tr>
-                <tr>
-                    <td colspan="7">
-                        <h4>Отклики:</h4>
-                        {% for response in post.comment_set.all %}
-                            <p><strong>{{ response.user.username }}:</strong> {{ response.content }}</p>
-                        {% empty %}
-                            <p>Откликов пока нет</p>
-                        {% endfor %}
-                    </td>
-                </tr>
+
             {% empty %}
                 <tr>
-                    <td colspan="5">Посты не найдены</td>
+                    <td colspan="5">Отклики не найдены</td>
                 </tr>
             {% endfor %}
         </table>
     {% else %}
-        <p>Посты не найдены</p>
+        <p>Обьявления не найдены</p>
     {% endif %}
 
     {% if page_obj.has_previous %}

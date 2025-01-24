@@ -9,18 +9,21 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
 from pathlib import Path
+import logging, os
+from smtplib import SMTPException
+from django.core.mail import send_mail
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-
+# BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-9k(4$7io4cy&nxboh8-ti%ew@-vj8dy4g2olv4xp+xm#a61b-7'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -47,6 +50,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.yandex',
+    'allauth.socialaccount.providers.google',
 ]
 
 MIDDLEWARE = [
@@ -66,7 +70,7 @@ ROOT_URLCONF = 'Bulletin_Board_MMORPG.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
+        'DIRS': [os.path.join(BASE_DIR, 'templates')]
         ,
         'APP_DIRS': True,
         'OPTIONS': {
@@ -90,7 +94,7 @@ WSGI_APPLICATION = 'Bulletin_Board_MMORPG.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
@@ -132,7 +136,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 STATICFILES_DIRS = [
-    BASE_DIR /'static',
+    os.path.join(BASE_DIR, 'static'),
 ]
 
 # Default primary key field type
@@ -153,29 +157,54 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_EMAIL_CONFIRMATION_HMAC = True
-ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 5
-ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT = 300
-
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 
 ACCOUNT_FORMS = {"signup": "accounts.forms.CustomSignupForm"}
 
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-
 EMAIL_HOST = 'smtp.yandex.ru'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = "vitalivoloshin1975@yandex.co.il"
-EMAIL_HOST_PASSWORD = "vBd-Rxk-2hF-Gyz"
-EMAIL_USE_TLS = True
-EMAIL_USE_SSL = False
-
+EMAIL_PORT = 465
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
 DEFAULT_FROM_EMAIL = "vitalivo@gmail.com"
+SERVER_EMAIL = "example@yandex.ru"
 
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/django_error.log'),
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}
 

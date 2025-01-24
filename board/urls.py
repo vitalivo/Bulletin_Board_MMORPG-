@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
     PostListView, PostDetailView, PostCreateView, PostUpdateView, PostDeleteView, CommentCreateView,
-    UserCommentListView, CommentAcceptView, CommentDeleteView
+    UserCommentListView, CommentAcceptView, CommentDeleteView, subscriptions
 )
 
 app_name = 'board'
@@ -15,5 +15,6 @@ urlpatterns = [
     path('<int:pk>/comments/create/', CommentCreateView.as_view(), name='comment-create'),
     path('comments/', UserCommentListView.as_view(), name='comment-list'),
     path('comments/<int:pk>/accept/', CommentAcceptView.as_view(), name='comment-accept'),
-    path('comments/<int:pk>/delete/', CommentDeleteView.as_view(), name='comment-delete'),  # noqa: E501
+    path('comments/<int:pk>/delete/', CommentDeleteView.as_view(), name='comment-delete'),
+    path('subscriptions/', subscriptions, name='subscriptions'),
 ]

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Subscriptions
+{% endblock title %}
+
+{% block content %}
+<h1>Подписки на категории</h1>
+<table>
+    <tr>
+        <th>Категория</th>
+        <th>Статус подписки</th>
+        <th>Действие</th>
+    </tr>
+    {% for category in categories %}
+    <tr>
+        <td>{{ category.get_name_display }}</td>
+        <td>
+            {% if category.user_subscribed %}
+            Подписан
+            {% else %}
+            Не подписан
+            {% endif %}
+        </td>
+        <td>
+            <form method="post" style="display: inline;">
+                {% csrf_token %}
+                <input type="hidden" name="category_id" value="{{ category.id }}">
+                {% if category.user_subscribed %}
+                <input type="hidden" name="action" value="unsubscribe">
+                <button type="submit" class="btn btn-danger">Отписаться</button>
+                {% else %}
+                <input type="hidden" name="action" value="subscribe">
+                <button type="submit" class="btn btn-primary">Подписаться</button>
+                {% endif %}
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock content %}
