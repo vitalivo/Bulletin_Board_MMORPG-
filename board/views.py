@@ -14,7 +14,12 @@ from .models import Subscription, Category, Post, Comment
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_protect
-from django.db.models import Exists, OuterRef, BooleanField, ExpressionWrapper, Q
+from django.db.models import Exists, OuterRef
+import django_filters
+class CommentFilter(django_filters.FilterSet):
+    class Meta:
+        model = Comment
+        fields = ['post']
 
 @login_required
 @csrf_protect
@@ -30,13 +35,18 @@ def subscriptions(request):
             Subscription.objects.filter(user=request.user, category=category).delete()
 
     categories_with_subscriptions = Category.objects.annotate(
-        user_subscribed=ExpressionWrapper(
-            Exists(Subscription.objects.filter(user=request.user, category=OuterRef('pk'))),
-            output_field=BooleanField()
+        user_subscribed=Exists(
+            Subscription.objects.filter(
+                user=request.user,
+                category=OuterRef('pk'),
+            )
         )
     ).order_by('name')
 
-    return render(request, 'subscriptions.html', {'categories': categories_with_subscriptions})
+    return render(
+        request,
+        'subscriptions.html',
+        {'categories': categories_with_subscriptions})
 
 
 
@@ -49,7 +59,14 @@ class UserCommentListView(PermissionRequiredMixin, ListView):
     context_object_name = 'comments'
 
     def get_queryset(self):
-        return Comment.objects.filter(post__user=self.request.user)
+        queryset = Comment.objects.filter(post__user=self.request.user)
+        self.filterset = CommentFilter(self.request.GET, queryset)
+        return self.filterset.qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filterset'] = self.filterset
+        return context
 
 
 class CommentAcceptView(PermissionRequiredMixin, UpdateView):
@@ -108,7 +125,7 @@ class CommentCreateView(PermissionRequiredMixin, CreateView):
         form.instance.post_id = self.kwargs.get('pk')
         response = form.save()
         send_mail(
-            subject='Новый отклик на ваше объявление',
+            subject='Новый отклик',
             message=f'Вы получили новый отклик: {response.content}',
             from_email='vitalivoloshin1975@yandex.co.il',
             recipient_list=[response.post.user.email],
@@ -116,7 +133,7 @@ class CommentCreateView(PermissionRequiredMixin, CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy('post-detail', kwargs={'pk': self.object.pk})
+        return reverse_lazy('post-detail', kwargs={'pk': self.object.post.pk})
 
 
 
@@ -153,9 +170,10 @@ class PostCreateView(PermissionRequiredMixin, CreateView):
         form.instance.user = self.request.user
         response = form.save()
         send_mail(
-            subject='Новый отклик на ваше объявление',
-            message=f'Вы получили новый отклик: {response.content_text}',
-            from_email='vitalivoloshin1975@yandex.co.il', recipient_list=[response.user.email],
+            subject='Новое объявление',
+            message=f'Вы получили новое объявление: {response.content_text}',
+            from_email='vitalivoloshin1975@yandex.co.il',
+            recipient_list=[response.user.email],
         )
         return super().form_valid(form)
 

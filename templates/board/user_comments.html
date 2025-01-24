@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 {% block content %}
+    <form method="get">
+        {{ filterset.form.as_p }}
+        <button type="submit">Фильтровать</button>
+    </form>
     <h1>Мои отклики</h1>
     {% if comments %}
         <table>

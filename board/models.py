@@ -41,7 +41,7 @@ class Subscription(models.Model):
 class Post(models.Model):
     title = models.CharField(max_length=200, verbose_name='Заголовок')
     content_text = RichTextField(verbose_name='Контент')
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, verbose_name='Категория')
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name='Категория')
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Обновлено')
